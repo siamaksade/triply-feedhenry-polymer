@@ -1,0 +1,118 @@
+<link rel="import" href="components/polymer/polymer.html">
+<link rel="import" href="components/paper-elements/paper-elements.html">
+<link rel="import" href="trip-card.html">
+<link rel="import" href="app-globals.html">
+
+<polymer-element name="trip-add">
+  <template>
+    <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+
+    paper-input {
+      width: 100%;
+    }
+
+    paper-fab {
+      color: #fff;
+      margin-right:2em;
+    }
+
+    paper-fab.blue {
+      background: #5677fc;
+    }
+
+    paper-fab.green {
+      background: #259b24;
+    }
+
+    paper-fab.yellow {
+      background: #ffeb3b;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    html /deep/ paper-dropdown-menu {
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    html /deep/ core-menu {
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    paper-dropdown-menu {
+      width: 100%;
+    }
+
+    paper-item {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    html /deep/ core-collapse {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    html /deep/ core-overlay {
+      border: 1px solid #ccc;
+      padding: 8px;
+      background: #fff;
+    }
+
+
+    </style>
+    <app-globals id="globals"></app-globals>
+    <div layout vertical center>
+      <trip-card>
+        <h2>Add Trip</h2>
+        <paper-input label="From" value="{{from}}"></paper-input>
+        <paper-input label="To" value="{{to}}"></paper-input>
+        <paper-input label="Date" value="{{date}}"></paper-input>
+
+        <div class="buttons">
+          <paper-fab id="#cancel-trip" icon="cancel" class="red" title="Cancel" on-tap="{{cancelTrip}}"></paper-fab>
+          <paper-fab id="#add-trip" icon="check" class="blue" title="Save" on-tap="{{saveTrip}}"></paper-fab>
+        </div>
+      </trip-card>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+    ready: function() {
+      this.travelers = ['Siamak', 'Jesper', 'Sarah'];
+    },
+    cancelTrip: function() {
+      document.querySelector('#pages').selected = 0;
+    },
+    reset: function() {
+      this.from = '';
+      this.to = '';
+      this.date = '';
+    },
+    saveTrip: function() {
+      $fh.cloud({
+        "path": "/trips",
+        "method": "POST",
+        "data": { "from": this.from, "to": this.to, "date": this.date, "userId": this.$.globals.values.id, "userName": this.$.globals.values.name },
+        "contentType": "application/json",
+        "timeout": 10000
+      }, function(res) {
+      }, function(msg,err) {
+      });
+
+      this.reset();
+      document.querySelector('trip-list').refresh();
+      document.querySelector('#pages').selected = 0;
+    },
+  });
+  </script>
+</polymer-element>

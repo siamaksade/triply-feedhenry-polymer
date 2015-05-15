@@ -1,0 +1,78 @@
+<link rel="import" href="components/polymer/polymer.html">
+<link rel="import" href="components/paper-elements/paper-elements.html">
+<link rel="import" href="trip-card.html">
+<link rel="import" href="app-globals.html">
+
+<polymer-element name="trip-list" attributes="show">
+  <template>
+    <style>
+    :host {
+      display: block;
+      width: 100%;
+    }
+    trip-card {
+      margin-bottom: 30px;
+    }
+
+    paper-fab {
+      color: #fff;
+      margin-right:2em;
+    }
+
+    paper-fab.blue {
+      background: #5677fc;
+    }
+
+    paper-fab.green {
+      background: #259b24;
+    }
+
+    paper-fab.yellow {
+      background: #ffeb3b;
+    }
+
+    </style>
+    <app-globals id="globals"></app-globals>
+    <div layout vertical center>
+      <template repeat="{{trip in trips}}">
+        <trip-card hidden?="{{show == 'mytrips' && !mine(trip)}}">
+          <h2>{{trip.from}} &#8594; {{trip.to}}</h2>
+          <p><b>Date:</b> {{trip.date}}</p>
+          <p><b>Traveler:</b> {{trip.userName}}</p>
+        </trip-card>
+      </template>
+      <paper-fab id="add-trip" icon="add" class="blue" title="Add" on-tap="{{addTrip}}"></paper-fab>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+    mine: function(trip) {
+      if (trip) {
+        return trip.userId == this.$.globals.values.id;
+      }
+    },
+    ready: function() {
+      this.refresh();
+    },
+    refresh: function() {
+      $fh.cloud({
+        "path": "/trips",
+        "method": "GET",
+        "contentType": "application/json",
+        "timeout": 10000
+      }, function(res) {
+        document.querySelector('trip-list').trips = res;
+
+      }, function(msg,err) {
+        console.log(err);
+      });
+    },
+    addTrip: function() {
+      document.querySelector('#pages').selected = 1;
+      document.querySelector('core-header-panel').scroller.scrollTop = 0;
+    }
+  });
+
+  </script>
+</polymer-element>

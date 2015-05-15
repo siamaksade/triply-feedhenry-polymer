@@ -1,0 +1,19 @@
+<link rel="import" href="components/polymer/polymer.html">
+
+<polymer-element name="app-globals">
+  <script>
+  (function() {
+    var values = {
+      id: 1,
+      name: 'Siamak',
+      mobile: '+46731835553'
+    }
+
+    Polymer({
+      ready: function() {
+        this.values = values;
+      }
+    });
+  })();
+  </script>
+</polymer-element>
