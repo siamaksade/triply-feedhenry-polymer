@@ -49,7 +49,7 @@
   Polymer({
     mine: function(trip) {
       if (trip) {
-        return trip.userId == this.$.globals.values.id;
+        return trip.userId == this.$.globals.values.user.id;
       }
     },
     ready: function() {

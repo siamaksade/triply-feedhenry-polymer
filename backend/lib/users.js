@@ -2,52 +2,31 @@ var $fh = require('fh-mbaas-api');
 var express = require('express');
 var bodyParser = require('body-parser');
 var cors = require('cors');
+var querystring = require('querystring');
+var https = require('https');
 
-function tripsRoute() {
-  var trips = new express.Router();
-  trips.use(cors());
-  trips.use(bodyParser());
+function usersRoute() {
+  var users = new express.Router();
+  users.use(cors());
+  users.use(bodyParser());
 
-
-  trips.get('/', function(req, res) {
-    var options = {
-      "act": "list",
-      "type": "user",
-      "eq": {
-          "verified": true
-        }
-    };
-
-    $fh.db(options, function (err, data) {
-      if (err) {
-        console.error("Error " + err);
-      } else {
-        console.log(JSON.stringify(data));
-
-        if (data.count == 0) {
-          res.json([]);
-        } else {
-          var list = [];
-          for (var i = 0; i < data.list.length; i++) {
-            list[i] = data.list[i].fields;
-          }
-
-          res.json(list);
-        }
-      }
-    });
-  });
-
-  trips.post('/', function(req, res) {
+  users.post('/register', function(req, res) {
     console.log(new Date(), 'In user route POST / req.body=', req.body);
+
+    var name = req.body.name;
+    var mobile = req.body.mobile;
+    // random number as verification code
+    var code = Math.round(Math.random() * (999999 - 100000) + 100000);
+    console.log("code = " + code);
 
     if (req.body) {
       var options = {
         "act": "create",
         "type": "user",
         "fields": {
-          "name": req.body.name,
-          "mobile": req.body.mobile,
+          "name": name,
+          "mobile": mobile,
+          "code": code,
           "verified": false
         }
       };
@@ -57,13 +36,90 @@ function tripsRoute() {
           console.error("Error " + err);
           res.json({"result": "error", "message":  err });
         } else {
-          res.json({"result": "success", "user":  data.fields });
+          var user = data.fields;
+          user.id = data.guid;
+
+
+          // send SMS
+          var postdata = querystring.stringify({
+            'to' : mobile,
+            'body': 'Verification code ' + code + ' /Triply'
+          });
+
+          var postoptions = {
+              host : 'redhat-demos-t-unp82efa0c6qwegq1bihk8j4-dev.ac.gen.ric.feedhenry.com',
+              port : 443,
+              path : '/cloud/sms',
+              method : 'POST',
+              headers: {'Content-Type' : 'application/json', 'Content-Length': postdata.length}
+          };
+
+          var req = https.request(postoptions, function(res) {
+            console.log("Twillo status code = " + res.statusCode);
+          });
+
+          req.on('error', function(e) {
+            console.log('Problem with Twillo request: ' + e.message);
+          });
+
+          req.write(postdata);
+          req.end();
+
+
+          res.json({"result": "success", "user":  user });
         }
       });
     }
   });
 
-  return trips;
+  users.post('/verify', function(req, res) {
+    console.log(new Date(), 'In user route POST / req.body=', req.body);
+
+    if (req.body) {
+      var options = {
+          "act": "read",
+          "type": "user",
+          "guid": req.body.id
+        }
+      };
+
+      $fh.db(options, function (err, data) {
+        if (err) {
+          console.error("Error " + err);
+          res.json({"result": "error", "message":  err });
+        } else {
+          if (data.fields.code == req.body.code) {
+            // update user
+            options = {
+              "act": "update",
+              "type": "user",
+              "guid": req.body.id,
+              "fields": {
+                "verified": true
+              }
+            };
+
+            $fh.db(options, function (err, data) {
+              if (err) {
+                 // handle error
+                 res.json({"result": "fail", "msg":  'Something went wrong' });
+                 return;
+              } else {
+                // handle success
+              }
+            });
+
+
+            res.json({"result": "success"});
+
+          } else {
+            res.json({"result": "fail", "msg":  'Invalid code' });
+          }
+        }
+      });
+  });
+
+  return users;
 }
 
-module.exports = tripsRoute;
+module.exports = usersRoute;

@@ -19,7 +19,6 @@ function tripsRoute() {
       if (err) {
         console.error("Error " + err);
       } else {
-        console.log(data.count + " items found");
 
         if (data.count == 0) {
           res.json([]);
@@ -29,13 +28,6 @@ function tripsRoute() {
             list[i] = data.list[i].fields;
           }
 
-          //  {
-          //    date: '2015-06-01',
-          //    from: 'Stockholm',
-          //    to: 'London',
-          //    userId: 1,
-          //    userName: 'Sarah'
-          //  }
           res.json(list.reverse());
         }
       }

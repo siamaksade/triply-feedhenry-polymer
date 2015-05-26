@@ -3,7 +3,7 @@
 <link rel="import" href="trip-card.html">
 <link rel="import" href="app-globals.html">
 
-<polymer-element name="trip-add">
+<polymer-element name="user-register">
   <template>
     <style>
     :host {
@@ -15,21 +15,13 @@
       width: 100%;
     }
 
-    paper-fab {
+    paper-button.blue {
+      color: #4285f4;
+    }
+
+    paper-button[raised].blue {
+      background: #4285f4;
       color: #fff;
-      margin-right:2em;
-    }
-
-    paper-fab.blue {
-      background: #5677fc;
-    }
-
-    paper-fab.green {
-      background: #259b24;
-    }
-
-    paper-fab.yellow {
-      background: #ffeb3b;
     }
 
     .buttons {
@@ -72,14 +64,12 @@
     <app-globals id="globals"></app-globals>
     <div layout vertical center>
       <trip-card>
-        <h2>Add Trip</h2>
-        <paper-input label="From" value="{{from}}"></paper-input>
-        <paper-input label="To" value="{{to}}"></paper-input>
-        <paper-input label="Date" value="{{date}}"></paper-input>
+        <h2>Register</h2>
+        <paper-input label="Name" value="{{name}}" required></paper-input>
+        <paper-input label="Mobile" value="{{mobile}}" required></paper-input>
 
         <div class="buttons">
-          <paper-fab id="cancel-trip" icon="cancel" class="red" title="Cancel" on-tap="{{cancelTrip}}"></paper-fab>
-          <paper-fab id="add-trip" icon="check" class="blue" title="Save" on-tap="{{saveTrip}}"></paper-fab>
+          <paper-button id="register" raised class="blue" on-tap="{{register}}">Register</paper-button>
         </div>
       </trip-card>
     </div>
@@ -87,28 +77,30 @@
 
   <script>
   Polymer({
-    cancelTrip: function() {
-      document.querySelector('#pages').selected = 0;
-    },
-    reset: function() {
-      this.from = '';
-      this.to = '';
-      this.date = '';
-    },
-    saveTrip: function() {
+    register: function() {
+      var pages = document.querySelector('#pages');
+      var verify = document.querySelector('#user-verify');
+      var self = this;
+
       $fh.cloud({
-        "path": "/trips",
+        "path": "/users/register",
         "method": "POST",
-        "data": { "from": this.from, "to": this.to, "date": this.date, "userId": this.$.globals.values.user.id, "userName": this.$.globals.values.user.name },
+        "data": { "name": this.name, "mobile": this.mobile},
         "contentType": "application/json",
         "timeout": 10000
       }, function(res) {
-      }, function(msg,err) {
-      });
+        self.$.globals.values.user.mobile = res.user.mobile;
+        self.$.globals.values.user.name = res.user.name;
+        self.$.globals.values.user.id = res.user.id;
+        self.$.globals.values.user.verified = false;
 
-      this.reset();
-      document.querySelector('trip-list').refresh();
-      document.querySelector('#pages').selected = 0;
+        verify.mobile = res.user.mobile;
+        pages.selected = 3; // change to verification page
+
+      }, function(msg,err) {
+        // handle error
+        alert(err);
+      });
     },
   });
   </script>

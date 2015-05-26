@@ -26,6 +26,7 @@ app.use(mbaasExpress.fhmiddleware());
 
 // fhlint-begin: custom-routes
 app.use('/trips', require('./lib/trips.js')());
+app.use('/users', require('./lib/users.js')());
 
 // fhlint-end
 

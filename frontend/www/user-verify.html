@@ -3,7 +3,7 @@
 <link rel="import" href="trip-card.html">
 <link rel="import" href="app-globals.html">
 
-<polymer-element name="trip-add">
+<polymer-element name="user-verify">
   <template>
     <style>
     :host {
@@ -15,21 +15,13 @@
       width: 100%;
     }
 
-    paper-fab {
+    paper-button.blue {
+      color: #4285f4;
+    }
+
+    paper-button[raised].blue {
+      background: #4285f4;
       color: #fff;
-      margin-right:2em;
-    }
-
-    paper-fab.blue {
-      background: #5677fc;
-    }
-
-    paper-fab.green {
-      background: #259b24;
-    }
-
-    paper-fab.yellow {
-      background: #ffeb3b;
     }
 
     .buttons {
@@ -67,48 +59,50 @@
       background: #fff;
     }
 
+    .error {
+      color: red;
+      margin-top:40px;
+    }
 
     </style>
     <app-globals id="globals"></app-globals>
     <div layout vertical center>
       <trip-card>
-        <h2>Add Trip</h2>
-        <paper-input label="From" value="{{from}}"></paper-input>
-        <paper-input label="To" value="{{to}}"></paper-input>
-        <paper-input label="Date" value="{{date}}"></paper-input>
+        <div class="messages">An SMS is sent to your number {{mobile}} with the verification code. Enter the code below to proceed.</div>
+        <paper-input label="Verification Code" value="{{code}}"></paper-input>
 
         <div class="buttons">
-          <paper-fab id="cancel-trip" icon="cancel" class="red" title="Cancel" on-tap="{{cancelTrip}}"></paper-fab>
-          <paper-fab id="add-trip" icon="check" class="blue" title="Save" on-tap="{{saveTrip}}"></paper-fab>
+          <paper-button id="verify" raised class="blue" on-tap="{{verify}}">Verify</paper-button>
         </div>
+        <div class="error">{{errorMessage}}</div>
       </trip-card>
     </div>
   </template>
 
   <script>
   Polymer({
-    cancelTrip: function() {
-      document.querySelector('#pages').selected = 0;
-    },
-    reset: function() {
-      this.from = '';
-      this.to = '';
-      this.date = '';
-    },
-    saveTrip: function() {
+    verify: function() {
+      var pages = document.querySelector('#pages');
+      var self = this;
+
       $fh.cloud({
-        "path": "/trips",
+        "path": "/users/verify",
         "method": "POST",
-        "data": { "from": this.from, "to": this.to, "date": this.date, "userId": this.$.globals.values.user.id, "userName": this.$.globals.values.user.name },
+        "data": { "id": this.$.globals.values.user.id, "code": this.code },
         "contentType": "application/json",
         "timeout": 10000
       }, function(res) {
+        if (res.result == 'success') {
+          // persist user data locally
+          self.$.globals.values.user.verified = true;
+          self.$.globals.save();
+          pages.selected = 0;
+
+        } else {
+          self.errorMessage = 'Invalid verification code'
+        }
       }, function(msg,err) {
       });
-
-      this.reset();
-      document.querySelector('trip-list').refresh();
-      document.querySelector('#pages').selected = 0;
     },
   });
   </script>

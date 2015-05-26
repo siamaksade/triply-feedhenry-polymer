@@ -17,11 +17,15 @@
   <link rel="import" href="components/paper-elements/paper-elements.html">
   <link rel="import" href="trip-list.html">
   <link rel="import" href="trip-add.html">
+  <link rel="import" href="user-register.html">
+  <link rel="import" href="user-verify.html">
+  <link rel="import" href="app-globals.html">
 
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body unresolved>
+  <app-globals id="globals"></app-globals>
   <core-header-panel flex>
     <core-toolbar>
       <paper-tabs id="tabs" selected="mytrips" self-end>
@@ -32,7 +36,7 @@
       <paper-icon-button icon="refresh"></paper-icon-button>
     </core-toolbar>
 
-    <core-pages id="pages" selected="0">
+    <core-pages id="pages" selected="2">
       <div>
         <div class="container" layout vertical center>
           <trip-list show="mytrips"></trip-list>
@@ -43,13 +47,25 @@
           <trip-add />
         </div>
       </div>
+      <div>
+        <div class="container" layout vertical center>
+          <user-register id="user-register" />
+        </div>
+      </div>
+      <div>
+        <div class="container" layout vertical center>
+          <user-verify  id="user-verify" />
+        </div>
+      </div>
     </core-pages>
   </core-header-panel>
 
   <script src="feedhenry.js"></script>
   <script>
+    var globals = document.querySelector('#globals');
     var tabs = document.querySelector('paper-tabs');
     var list = document.querySelector('trip-list');
+    var pages = document.querySelector('#pages');
 
     tabs.addEventListener('core-select', function() {
       list.show = tabs.selected;
@@ -58,6 +74,15 @@
     document.querySelector('paper-icon-button').onclick = function() {
       document.querySelector('trip-list').refresh();
     };
+
+    window.addEventListener('polymer-ready', function(e) {
+      if (globals.isUserVerified()) { // already reigstered and verified
+        globals.load();
+        pages.selected = 0;
+      } else {
+        pages.selected = 2;
+      }
+    });
   </script>
 </body>
 
