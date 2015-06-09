@@ -1,6 +1,37 @@
-# Triply MBaaS Server
+# Triply Cloud App
 
-# Group Users API
+# Triply API
+
+# Add Trip [/trips]
+
+Add Trip
+
+## add trip [POST]
+
+ Add Trip
+
++ Request (application/json)
+    + Body
+            {
+              "from": "city",
+              "to": "city",
+              "date": "yyyy-MM-dd",
+              "userId": "user id",
+              "userName": "user name"
+            }
+
++ Response 200 (application/json)
+    + Body
+            {
+              "result": "success"
+            }
+
+## list trips [GET]
+
++ Request (application/json)
+
++ Response 200 (application/json)
+
 
 # Register User [/users/register]
 
