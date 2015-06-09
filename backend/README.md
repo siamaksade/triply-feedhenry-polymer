@@ -1,25 +1,53 @@
-# FeedHenry Hello World MBaaS Server
+# Triply MBaaS Server
 
-This is a blank 'hello world' FeedHenry MBaaS. Use it as a starting point for building your APIs. 
+# Group Users API
 
-# Group Hello World API
+# Register User [/users/register]
 
-# hello [/hello]
+Register user
 
-'Hello world' endpoint.
+## register [POST] 
 
-## hello [POST] 
-
-'Hello world' endpoint.
+ Register user
 
 + Request (application/json)
     + Body
             {
-              "hello": "world"
+              "name": "user name",
+              "mobile": "user mobile"
             }
 
 + Response 200 (application/json)
     + Body
             {
-              "msg": "Hello world"
+              "result": "success",
+              "user": {
+                "name": "user name",
+                "mobile": "user mobile",
+                "code": "verification code",
+                "verified": false,
+                "id": "user id"
+              }
             }
+
+# Verify User [/users/verify]
+
+Verify user
+
+## verify [POST] 
+
+ Verify user 
+
++ Request (application/json)
+    + Body
+            {
+              "id": "user id",
+              "code": "verification code"
+            }
+
++ Response 200 (application/json)
+    + Body
+            {
+              "result": "success"
+            }
+

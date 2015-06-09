@@ -41,30 +41,22 @@ function usersRoute() {
 
 
           // send SMS
-          var postdata = querystring.stringify({
-            'to' : mobile,
-            'body': 'Verification code ' + code + ' /Triply'
+          $fh.service({
+            "guid": process.env.TWILIO_SERVICE_ID,
+            "path": "/cloud/sms",
+            "method": "POST",
+            "params": {
+              "to": mobile,
+              "body": 'Verification code ' + code + ' /Triply'
+              }
+          }, function(err, body, res) {
+            if (err) {
+              // An error occurred 
+              console.log('Twilio service call failed: ', err);
+            } else {
+              console.log('Twilio response Body: ', body);
+            }
           });
-
-          var postoptions = {
-              host : 'redhat-demos-t-unp82efa0c6qwegq1bihk8j4-dev.ac.gen.ric.feedhenry.com',
-              port : 443,
-              path : '/cloud/sms',
-              method : 'POST',
-              headers: {'Content-Type' : 'application/json', 'Content-Length': postdata.length}
-          };
-
-          var req = https.request(postoptions, function(res) {
-            console.log("Twillo status code = " + res.statusCode);
-          });
-
-          req.on('error', function(e) {
-            console.log('Problem with Twillo request: ' + e.message);
-          });
-
-          req.write(postdata);
-          req.end();
-
 
           res.json({"result": "success", "user":  user });
         }
